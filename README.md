@@ -14,3 +14,14 @@ A sleek and blazing-fast command-line tool that synchronizes trailers with your 
 * **Headless & CLI-based**: Ideal for automation in Docker or as a scheduled task.
 * **YAML Configuration**: Your settings are neatly managed in a single, easy-to-read `.yaml` file.
 * **API-Driven Integration**: ATC retrieves information directly from the **Radarr** and **Sonarr** APIs, ensuring your entire library is filled with the right trailers.
+
+## Configuration
+
+To get started, you need to create a `config.yaml` file that contains your server details.
+
+1.  Create your personal configuration file by copying the provided template:
+    ```bash
+    cp example-config.yaml config.yaml
+    ```
+2.  Open the new `config.yaml` file with a text editor.
+3.  Fill in the actual URLs and API keys for each of your Radarr and Sonarr instances. The `config.yaml` file is ignored by Git, so your private keys will remain safe.

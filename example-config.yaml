@@ -1,0 +1,34 @@
+# Global configuration for arr-trailer-core
+# This file is used to configure the Radarr and Sonarr instances.
+
+dry_run: false #true or false, true for testing, false for production
+
+radarr:
+  - name: "Radarr_1"
+    url: "http://localhost:7878"
+    api_key: "YOUR_RADARR_API_KEY_HERE"
+    path_mappings:
+      - from: "/movies" #'from' path in Docker
+        to: "/mnt/user/media/movies" # 'to' path in host system
+  # Uncomment the following block to add another Radarr instance, add as many you want, just copy the block and change the name, url, api_key, and path_mappings
+  # - name: "Radarr_2"
+  #   url: "http://localhost:7878"
+  #   api_key: "YOUR_RADARR_2_API_KEY_HERE"
+  #   path_mappings:
+  #     - from: "/movies" #'from' path in Docker
+  #       to: "/mnt/user/media/movies4k" # 'to' path in host system
+
+sonarr:
+  - name: "Sonarr_1"
+    url: "http://localhost:8989"
+    api_key: "YOUR_SONARR_API_KEY_HERE"
+    path_mappings:
+      - from: "/tv" #'from' path in Docker
+        to: "/mnt/user/media/tv" # 'to' path in host system
+  # Uncomment the following block to add another Sonarr instance, add as many you want, just copy the block and change the name, url, api_key, and path_mappings
+  # - name: "Sonarr_2"
+  #   url: "http://localhost:8989"
+  #   api_key: "YOUR_SONARR_2_API_KEY_HERE"
+  #   path_mappings:
+  #     - from: "/tv" #'from' path in Docker
+  #       to: "/mnt/user/media/anime" # 'to' path in host system
