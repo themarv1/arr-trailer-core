@@ -9,4 +9,4 @@ Features:
 
     YAML-Konfiguration: Einfache Verwaltung deiner Einstellungen in einer lesbaren .yaml-Datei.
 
-    Umfassende Unterstützung: Kompatibel mit Radarr- (Filme) und Sonarr- (Serien) Servern.en.
+    Umfassende Unterstützung: Kompatibel mit Radarr- und Sonarr- Servern.
