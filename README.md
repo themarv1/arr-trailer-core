@@ -16,13 +16,6 @@ A sleek and blazing-fast command-line tool that serves as an automated companion
 * **Comprehensive Support**: ATC is compatible with both Radarr (movies) and Sonarr (series), ensuring your entire library is filled with the right trailers.
 
 ---
----
-
-# Arr Trailer Core (ATC)
-
-Ein schlankes und blitzschnelles Kommandozeilen-Tool, das als automatisierter Begleiter für deine **Radarr**- und **Sonarr**-Instanzen dient.
-
----
 
 ### Über Arr Trailer Core
 
