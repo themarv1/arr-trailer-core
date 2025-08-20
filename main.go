@@ -5,21 +5,30 @@ import (
 	"flag"
 	"log"
 	"os"
+	"strings"
 
 	"gopkg.in/yaml.v2"
 )
 
 // --- Structs für die Konfiguration ---
+
+type PathMapping struct {
+	From string `yaml:"from"`
+	To   string `yaml:"to"`
+}
+
 type RadarrInstance struct {
-	Name   string `yaml:"name"`
-	URL    string `yaml:"url"`
-	APIKey string `yaml:"api_key"`
+	Name         string        `yaml:"name"`
+	URL          string        `yaml:"url"`
+	APIKey       string        `yaml:"api_key"`
+	PathMappings []PathMapping `yaml:"path_mappings"`
 }
 
 type SonarrInstance struct {
-	Name   string `yaml:"name"`
-	URL    string `yaml:"url"`
-	APIKey string `yaml:"api_key"`
+	Name         string        `yaml:"name"`
+	URL          string        `yaml:"url"`
+	APIKey       string        `yaml:"api_key"`
+	PathMappings []PathMapping `yaml:"path_mappings"`
 }
 
 type Config struct {
@@ -28,7 +37,20 @@ type Config struct {
 	Sonarr []SonarrInstance `yaml:"sonarr"`
 }
 
+// --- Hilfsfunktion zum Übersetzen von Pfaden ---
+func translatePath(originalPath string, mappings []PathMapping) string {
+	for _, mapping := range mappings {
+		if strings.HasPrefix(originalPath, mapping.From) {
+			return strings.Replace(originalPath, mapping.From, mapping.To, 1)
+		}
+	}
+	return originalPath // Wenn kein Mapping passt, gib Original zurück
+}
+
 func main() {
+	// EINDEUTIGE VERSIONIERUNGSNACHRICHT
+	log.Println("--- ATC v2.0 mit instanz-spezifischem Path Mapping ---")
+
 	// --- Kommandozeilen-Flags ---
 	configFile := flag.String("config", "config.yaml", "Pfad zur Konfigurationsdatei")
 	cliDryRun := flag.Bool("dry-run", false, "Überschreibt die Konfiguration und erzwingt einen Dry Run.")
@@ -69,27 +91,25 @@ func main() {
 		}
 		log.Printf("[%s] Erfolgreich %d Filme gefunden und verarbeitet.", instance.Name, len(movies))
 
-		// --- VEREINFACHTE PRÜF-LOGIK ---
 		for _, movie := range movies {
-			// Wir interessieren uns nur für überwachte Filme
-			if !movie.Monitored {
+			// Wir interessieren uns nur für überwachte Filme, die auch eine Datei haben
+			if !movie.Monitored || !movie.HasFile {
 				continue
 			}
 
-			// Prüfe den lokalen Ordner des Films auf eine Trailer-Datei
-			localTrailerFound, err := hasLocalTrailer(movie.Path)
+			translatedPath := translatePath(movie.Path, instance.PathMappings)
+
+			localTrailerFound, err := hasLocalTrailer(translatedPath)
 			if err != nil {
-				log.Printf("[%s] WARNUNG: Konnte den Ordner für '%s' nicht prüfen: %v", instance.Name, movie.Title, err)
+				log.Printf("[%s] WARNUNG: Konnte den Ordner für '%s' nicht prüfen ('%s'): %v", instance.Name, movie.Title, translatedPath, err)
 				continue
 			}
 
-			// Wenn KEIN lokaler Trailer gefunden wurde, logge die Meldung.
 			if !localTrailerFound {
 				log.Printf("[%s] Film '%s (%d)' hat keinen lokalen Trailer.", instance.Name, movie.Title, movie.Year)
 			}
 		}
 
-		// Hier kommt später die Logik für Aktionen im Live-Modus hin
 		if isDryRun {
 			log.Printf("[%s] DRY RUN: Es würden jetzt Aktionen für die Filme ausgeführt.", instance.Name)
 		} else {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"path/filepath" // Neu für die Dateiendung
 	"strings"
 )
 
@@ -9,30 +10,31 @@ import (
 // die auf einen Trailer hindeutet.
 // Gibt true zurück, wenn ein Trailer gefunden wird, ansonsten false.
 func hasLocalTrailer(movieFolderPath string) (bool, error) {
-	// Lese den Inhalt des Verzeichnisses
 	files, err := os.ReadDir(movieFolderPath)
 	if err != nil {
-		// Gibt einen Fehler zurück, wenn der Ordner nicht gelesen werden kann
 		return false, err
 	}
 
-	// Gehe durch jede Datei im Ordner
 	for _, file := range files {
-		// Ignoriere Unterordner
 		if file.IsDir() {
 			continue
 		}
 
-		// Hole den Dateinamen
 		fileName := file.Name()
 
-		// Prüfe, ob der Dateiname unsere Trailer-Muster enthält
-		// ToLower sorgt dafür, dass die Groß-/Kleinschreibung ignoriert wird
-		if strings.Contains(strings.ToLower(fileName), "-trailer.") {
+		// --- NEUE, ROBUSTERE PRÜFUNG ---
+		// 1. Dateiendung entfernen
+		extension := filepath.Ext(fileName)
+		fileNameWithoutExt := strings.TrimSuffix(fileName, extension)
+
+		// 2. Umwandeln in Kleinbuchstaben und Leerzeichen am Ende entfernen
+		normalizedFileName := strings.TrimSpace(strings.ToLower(fileNameWithoutExt))
+
+		// 3. Prüfen, ob der normalisierte Name auf "-trailer" endet
+		if strings.HasSuffix(normalizedFileName, "-trailer") {
 			return true, nil // Trailer gefunden!
 		}
 	}
 
-	// Die Schleife ist durchgelaufen, kein Trailer wurde gefunden
 	return false, nil
 }

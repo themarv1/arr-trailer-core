@@ -34,6 +34,5 @@ func getMovies(instance RadarrInstance) ([]byte, error) {
 		return nil, fmt.Errorf("fehler beim Lesen der Antwort: %w", err)
 	}
 
-	// Gib die erfolgreiche Antwort (den Body) zurück
 	return body, nil
 }
