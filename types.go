@@ -1,7 +1,13 @@
 package main
 
-// Movie repräsentiert die Struktur eines einzelnen Films aus der Radarr API-Antwort.
-// Die `json:"..."`-Tags sagen Go, wie die Felder in der JSON-Datei heißen.
+// DownloadConfig holds settings related to downloading trailers.
+type DownloadConfig struct {
+	Enabled   bool   `yaml:"enabled"`
+	YTDLPPath string `yaml:"yt_dlp_path"`
+	Quality   string `yaml:"quality"`
+}
+
+// Movie struct remains the same
 type Movie struct {
 	ID        int    `json:"id"`
 	Title     string `json:"title"`

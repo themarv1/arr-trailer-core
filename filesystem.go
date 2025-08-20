@@ -1,15 +1,19 @@
 package main
 
 import (
+	"log"
 	"os"
-	"path/filepath" // Neu für die Dateiendung
 	"strings"
 )
 
 // hasLocalTrailer prüft, ob im angegebenen Ordner eine Datei existiert,
 // die auf einen Trailer hindeutet.
-// Gibt true zurück, wenn ein Trailer gefunden wird, ansonsten false.
-func hasLocalTrailer(movieFolderPath string) (bool, error) {
+// Die Funktion akzeptiert jetzt die Config, um das Loglevel zu prüfen.
+func hasLocalTrailer(movieFolderPath string, config *Config) (bool, error) {
+	if config.LogLevel == "debug" {
+		log.Printf("[DEBUG] Prüfe Ordner: %s", movieFolderPath)
+	}
+
 	files, err := os.ReadDir(movieFolderPath)
 	if err != nil {
 		return false, err
@@ -20,19 +24,17 @@ func hasLocalTrailer(movieFolderPath string) (bool, error) {
 			continue
 		}
 
-		fileName := file.Name()
+		if config.LogLevel == "debug" {
+			log.Printf("[DEBUG] ...sehe Datei: %s", file.Name())
+		}
 
-		// --- NEUE, ROBUSTERE PRÜFUNG ---
-		// 1. Dateiendung entfernen
-		extension := filepath.Ext(fileName)
-		fileNameWithoutExt := strings.TrimSuffix(fileName, extension)
+		lowerCaseFileName := strings.ToLower(file.Name())
 
-		// 2. Umwandeln in Kleinbuchstaben und Leerzeichen am Ende entfernen
-		normalizedFileName := strings.TrimSpace(strings.ToLower(fileNameWithoutExt))
-
-		// 3. Prüfen, ob der normalisierte Name auf "-trailer" endet
-		if strings.HasSuffix(normalizedFileName, "-trailer") {
-			return true, nil // Trailer gefunden!
+		if strings.Contains(lowerCaseFileName, "trailer") {
+			if config.LogLevel == "debug" {
+				log.Printf("[DEBUG] TREFFER bei Datei: %s", file.Name())
+			}
+			return true, nil
 		}
 	}
 

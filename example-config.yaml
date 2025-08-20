@@ -1,8 +1,21 @@
-# Global configuration for arr-trailer-core
-# This file is used to configure the Radarr and Sonarr instances.
+# Configuration for arr-trailer-core
 
-dry_run: false #true or false, true for testing, false for production
+# --- Global Settings ---
+log_level: "info" # "info" or "debug"
+dry_run: false # if true, no changes will be made (e.g., no downloads)
 
+# Optional: Provide a TMDB API key for higher quality trailer searches.
+# If this is left empty, a less accurate direct YouTube search will be used as a fallback.
+tmdb_api_key: ""
+
+# --- Download settings ---
+download:
+  enabled: true # Master switch to enable/disable trailer downloading
+  yt_dlp_path: "/usr/bin/yt-dlp" # Path to the yt-dlp executable on your server
+  # Quality settings for yt-dlp. This is a good default for 1080p.
+  quality: "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best"
+
+# --- Instance Configurations ---
 radarr:
   - name: "Radarr_1"
     url: "http://localhost:7878"
