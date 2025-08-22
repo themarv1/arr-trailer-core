@@ -54,12 +54,15 @@ You can compile the project from source using the Go toolchain.
 **To build from a linux operating system:**
 ```bash
 go build -o arr-trailer-core .
-
+```
 **To cross-compile from Windows PowerShell:**
+```Powershell
 $env:GOOS="linux"; $env:GOARCH="amd64"; go build -o arr-trailer-core .
-
+```
 **To cross-compile from MacOS:**
+```Bash
 GOOS=linux GOARCH=amd64 go build -o arr-trailer-core .
+```
 
 ## Roadmap / Future Work
 
