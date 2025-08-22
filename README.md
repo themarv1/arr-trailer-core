@@ -67,7 +67,6 @@ GOOS=linux GOARCH=amd64 go build -o arr-trailer-core .
 ## Roadmap / Future Work
 
 -   [ ] **Implement Trailer Downloader:** Integrate `yt-dlp` to perform the actual downloads.
--   [ ] **Full Sonarr Integration:** Implement the same detection and downloading logic for TV show episodes.
 -   [ ] **Post-Processing:** Add optional steps to call `ffmpeg` for embedding metadata into the downloaded trailer files.
 -   [ ] **Caching System:** Implement a local cache to avoid re-scanning and re-querying APIs for media that has been processed recently.
 -   [ ] **Language Prioritization:** Allow users to define a preferred language list for trailer searches on TMDB.
