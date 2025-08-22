@@ -11,7 +11,6 @@ import (
 )
 
 // --- Structs for configuration ---
-// (Diese sind jetzt alle in types.go, aber wir müssen die Config hier definieren)
 type PathMapping struct {
 	From string `yaml:"from"`
 	To   string `yaml:"to"`
@@ -125,7 +124,8 @@ func main() {
 		log.Printf("[%s] Successfully found %d series.", instance.Name, len(seriesList))
 
 		for _, series := range seriesList {
-			if !series.Monitored {
+			// Skip series that are not monitored or have no files on disk yet
+			if !series.Monitored || series.Statistics.EpisodeFileCount == 0 {
 				continue
 			}
 			translatedPath := translatePath(series.Path, instance.PathMappings)

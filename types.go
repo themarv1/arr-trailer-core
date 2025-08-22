@@ -7,8 +7,6 @@ type DownloadConfig struct {
 	Quality   string `yaml:"quality"`
 }
 
-// RadarrConfig holds settings for Radarr integration.
-
 // Movie represents the structure of a single movie from the Radarr API response.
 type Movie struct {
 	ID        int    `json:"id"`
@@ -20,21 +18,26 @@ type Movie struct {
 	Monitored bool   `json:"monitored"`
 }
 
-//SonarrConfig holds settings for Sonarr integration.
+// Statistics represents the statistic data for a series or season.
+type Statistics struct {
+	EpisodeFileCount int `json:"episodeFileCount"`
+}
 
 // Season represents a season within a Sonarr series.
 type Season struct {
-	SeasonNumber int  `json:"seasonNumber"`
-	Monitored    bool `json:"monitored"`
+	SeasonNumber int        `json:"seasonNumber"`
+	Monitored    bool       `json:"monitored"`
+	Statistics   Statistics `json:"statistics"`
 }
 
 // Series represents a single series from the Sonarr API response.
 type Series struct {
-	ID        int      `json:"id"`
-	Title     string   `json:"title"`
-	Path      string   `json:"path"`
-	TmdbID    int      `json:"tmdbId"`
-	TvdbID    int      `json:"tvdbId"`
-	Monitored bool     `json:"monitored"`
-	Seasons   []Season `json:"seasons"`
+	ID         int        `json:"id"`
+	Title      string     `json:"title"`
+	Path       string     `json:"path"`
+	TmdbID     int        `json:"tmdbId"`
+	TvdbID     int        `json:"tvdbId"`
+	Monitored  bool       `json:"monitored"`
+	Seasons    []Season   `json:"seasons"`
+	Statistics Statistics `json:"statistics"`
 }

@@ -1,20 +1,19 @@
 # Arr Trailer Core (ATC)
 
-> **:warning: SUPER EARLY DEVELOPMENT ALPHA :warning:**
->
-> This project is currently in a very early development stage. The core functionality of **detecting** missing trailers is working, but the actual **downloading** of trailers is not yet implemented. Please use it for testing and contribution purposes only. It is **not yet ready for production use**.
+A powerful command-line tool designed to work with your Radarr and Sonarr libraries to ensure every movie and TV series has a locally stored trailer.
 
-A powerful command-line tool designed to work with your Radarr (and soon Sonarr) library to ensure every movie has a locally stored trailer. ATC scans your library, identifies movies missing a trailer, and finds the correct trailer using The Movie Database (TMDB) for the highest accuracy.
+ATC scans your library, identifies media missing a trailer, finds the correct trailer using The Movie Database (TMDB), and downloads it directly into the correct folder using `yt-dlp`.
 
 ## Features
 
--   **Radarr Library Scans:** Connects to one or more Radarr instances to process your entire movie library.
--   **Local Trailer Detection:** Reliably checks your movie folders for existing trailer files (e.g., `moviename-trailer.mkv`).
+-   **Radarr & Sonarr Support:** Connects to one or more Radarr and Sonarr instances to process your entire library.
+-   **Local Trailer Detection:** Reliably checks your media folders for existing trailer files.
 -   **High-Quality Trailer Search:** Uses the TMDB API to find official trailers for missing entries, ensuring high accuracy.
--   **Fallback Search:** If no trailer is found on TMDB, it can fall back to a direct search on YouTube.
--   **Flexible Path Mapping:** Intelligently translates paths between your Docker containers (like Radarr) and the host system where ATC is running.
--   **Highly Configurable:** Almost every aspect, from API keys to log levels, is controlled via a simple `config.yaml` file.
--   **Dry Run Mode:** Allows you to run the entire process in a simulation mode (`--dry-run`) to see what actions *would* be taken without making any changes.
+-   **Fallback Search:** If no trailer is found on TMDB, it falls back to a direct search on YouTube.
+-   **Automated Downloading:** Integrates with `yt-dlp` to download the best-matched trailer directly into the correct movie or series folder.
+-   **Flexible Path Mapping:** Intelligently translates paths between your Docker containers (like Radarr/Sonarr) and the host system where ATC is running.
+-   **Highly Configurable:** Control every aspect via a simple `config.yaml` file, including API keys, log levels, download quality, and enabling/disabling features.
+-   **Dry Run Mode:** Run the entire process in a simulation mode (`--dry-run`) to see what actions *would* be taken without downloading any files.
 
 ## Configuration
 
@@ -31,13 +30,14 @@ To get started, you need to create a `config.yaml` file that contains your serve
 
 It is recommended to run ATC from a pre-compiled binary directly on your server (e.g., unRAID).
 
-1.  [Build the binary for your server's operating system](#building-from-source).
-2.  Copy the compiled `arr-trailer-core` binary and your `config.yaml` file to a directory on your server (e.g., `/mnt/user/appdata/arr-trailer-core/`).
-3.  Make the binary executable (one-time command):
+1.  Ensure `yt-dlp` is installed on your server and accessible via the system's PATH or provide a direct path in the `config.yaml`.
+2.  [Build the binary for your server's operating system](#building-from-source).
+3.  Copy the compiled `arr-trailer-core` binary and your `config.yaml` file to a directory on your server (e.g., `/mnt/user/appdata/arr-trailer-core/`).
+4.  Make the binary executable (one-time command):
     ```bash
     chmod +x arr-trailer-core
     ```
-4.  Run the program from the terminal:
+5.  Run the program from the terminal:
     ```bash
     ./arr-trailer-core
     ```

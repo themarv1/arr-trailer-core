@@ -34,39 +34,60 @@ func hasLocalMovieTrailer(movieFolderPath string, config *Config) (bool, error) 
 	return false, nil
 }
 
-// --- NEU FÜR SONARR ---
+// --- VERBESSERTE VERSION FÜR SONARR ---
 
-// hasLocalSeriesTrailer checks if a dedicated "trailers" subfolder with a video file exists.
+// hasLocalSeriesTrailer checks for a 'trailers' subfolder (case-insensitive) and if it contains any files.
 func hasLocalSeriesTrailer(seriesPath string, config *Config) (bool, error) {
-	trailerPath := filepath.Join(seriesPath, "trailers")
-
 	if config.LogLevel == "debug" {
-		log.Printf("[DEBUG] Checking for series trailer folder: %s", trailerPath)
+		log.Printf("[DEBUG] Checking for series trailer in base folder: %s", seriesPath)
 	}
 
-	dirInfo, err := os.Stat(trailerPath)
-	if os.IsNotExist(err) {
-		return false, nil // Folder doesn't exist, so no trailer
-	}
-	if err != nil {
-		return false, err // Another error occurred
-	}
-	if !dirInfo.IsDir() {
-		return false, nil // It's a file, not a folder, so it's wrong
-	}
-
-	files, err := os.ReadDir(trailerPath)
+	// Read all entries in the series' root directory
+	entries, err := os.ReadDir(seriesPath)
 	if err != nil {
 		return false, err
 	}
 
-	for _, file := range files {
+	// Look for a directory that is likely to contain trailers (case-insensitive)
+	var trailerDirName string
+	for _, entry := range entries {
+		if entry.IsDir() && strings.ToLower(entry.Name()) == "trailers" {
+			trailerDirName = entry.Name() // Found it, store the actual name (e.g., "Trailers")
+			break
+		}
+	}
+
+	// If we didn't find a directory named 'trailers' (case-insensitive)
+	if trailerDirName == "" {
+		if config.LogLevel == "debug" {
+			log.Printf("[DEBUG] ...no 'trailers' subfolder found.")
+		}
+		return false, nil
+	}
+
+	// We found the folder, now let's construct the full path to it
+	trailerPath := filepath.Join(seriesPath, trailerDirName)
+	if config.LogLevel == "debug" {
+		log.Printf("[DEBUG] ...found trailer subfolder at: %s", trailerPath)
+	}
+
+	// Now check if there are any files inside that folder
+	trailerFiles, err := os.ReadDir(trailerPath)
+	if err != nil {
+		return false, err // Error reading the found trailers subfolder
+	}
+
+	for _, file := range trailerFiles {
 		if !file.IsDir() {
 			if config.LogLevel == "debug" {
 				log.Printf("[DEBUG] ...found series trailer file: %s", file.Name())
 			}
-			return true, nil
+			return true, nil // Found at least one file, we're good
 		}
 	}
-	return false, nil // Folder exists but is empty
+
+	if config.LogLevel == "debug" {
+		log.Printf("[DEBUG] ...'trailers' subfolder was empty.")
+	}
+	return false, nil // Folder was found, but it was empty
 }
