@@ -10,7 +10,8 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-// --- Structs (bleiben gleich) ---
+// --- Structs for configuration ---
+// (Diese sind jetzt alle in types.go, aber wir müssen die Config hier definieren)
 type PathMapping struct {
 	From string `yaml:"from"`
 	To   string `yaml:"to"`
@@ -33,10 +34,10 @@ type Config struct {
 	TmdbApiKey string           `yaml:"tmdb_api_key"`
 	Download   DownloadConfig   `yaml:"download"`
 	Radarr     []RadarrInstance `yaml:"radarr"`
-	Sonarr     []RadarrInstance `yaml:"sonarr"`
+	Sonarr     []SonarrInstance `yaml:"sonarr"`
 }
 
-// --- translatePath (bleibt gleich) ---
+// --- Helper function to translate paths ---
 func translatePath(originalPath string, mappings []PathMapping) string {
 	for _, mapping := range mappings {
 		if strings.HasPrefix(originalPath, mapping.From) {
@@ -47,8 +48,8 @@ func translatePath(originalPath string, mappings []PathMapping) string {
 }
 
 func main() {
-	// --- Setup (bleibt gleich) ---
-	log.Println("--- ATC v2.0 mit instanz-spezifischem Path Mapping ---")
+	// --- Setup ---
+	log.Println("--- ATC v2.0 with instance-specific Path Mapping ---")
 	configFile := flag.String("config", "config.yaml", "Path to the configuration file")
 	cliDryRun := flag.Bool("dry-run", false, "Overrides the config file and forces a dry run.")
 	flag.Parse()
@@ -62,14 +63,10 @@ func main() {
 	}
 	isDryRun := config.DryRun || *cliDryRun
 	if isDryRun {
-		reason := "enabled in config file"
-		if *cliDryRun {
-			reason = "forced by --dry-run flag"
-		}
-		log.Printf(">>> ATTENTION: Dry Run mode is active (%s). No real changes will be made. <<<", reason)
+		log.Printf(">>> ATTENTION: Dry Run mode is active. No real changes will be made. <<<")
 	}
 
-	// --- Radarr-Verarbeitung ---
+	// --- Process Radarr Instances ---
 	log.Println("Processing Radarr instances...")
 	for _, instance := range config.Radarr {
 		log.Printf("[%s] Fetching movie list...", instance.Name)
@@ -85,58 +82,83 @@ func main() {
 		}
 		log.Printf("[%s] Successfully found and processed %d movies.", instance.Name, len(movies))
 
-		// --- Film-Schleife mit neuer Suchlogik ---
 		for _, movie := range movies {
 			if !movie.Monitored || !movie.HasFile {
 				continue
 			}
 			translatedPath := translatePath(movie.Path, instance.PathMappings)
-			localTrailerFound, err := hasLocalTrailer(translatedPath, config)
+			localTrailerFound, err := hasLocalMovieTrailer(translatedPath, config)
 			if err != nil {
 				log.Printf("[%s] WARNING: Could not check folder for '%s' ('%s'): %v", instance.Name, movie.Title, translatedPath, err)
 				continue
 			}
-
 			if !localTrailerFound {
 				log.Printf("[%s] MISSING: '%s (%d)' has no local trailer. Starting search...", instance.Name, movie.Title, movie.Year)
-
-				// --- NEUE SUCHLOGIK ---
 				youtubeKey := ""
-				// Schritt 1: Versuche TMDB-Suche, wenn Key vorhanden
 				if config.TmdbApiKey != "" {
-					key, err := findTrailerOnTMDB(movie, config.TmdbApiKey)
+					key, err := findMovieTrailerOnTMDB(movie, config.TmdbApiKey)
 					if err != nil {
-						// Logge den Fehler, aber mache trotzdem weiter mit dem Fallback
 						log.Printf("[%s] INFO: TMDB search for '%s' failed: %v. Falling back to direct search.", instance.Name, movie.Title, err)
 					}
 					youtubeKey = key
 				}
-
-				// Schritt 2: Entscheide, wie gedownloadet werden soll
 				if youtubeKey != "" {
 					log.Printf("[%s] ACTION: Found trailer for '%s' on TMDB (YouTube Key: %s). Would download now.", instance.Name, movie.Title, youtubeKey)
-					// HIER WÜRDE DER DOWNLOADER AUFGERUFEN: downloadTrailerWithYouTubeID(...)
 				} else {
 					log.Printf("[%s] ACTION: No trailer found on TMDB for '%s'. Would use direct yt-dlp search now.", instance.Name, movie.Title)
-					// HIER WÜRDE DER DOWNLOADER AUFGERUFEN: downloadTrailerWithSearchTerm(...)
 				}
-				// --- ENDE NEUE SUCHLOGIK ---
-
 			} else {
 				log.Printf("[%s] OK: '%s (%d)' already has a local trailer.", instance.Name, movie.Title, movie.Year)
 			}
 		}
 	}
 
-	// --- Sonarr-Verarbeitung (bleibt gleich) ---
+	// --- Process Sonarr Instances ---
 	log.Println("Processing Sonarr instances...")
 	for _, instance := range config.Sonarr {
-		log.Printf(" - Processing instance: %s (%s)", instance.Name, instance.URL)
+		log.Printf("[%s] Fetching series list...", instance.Name)
+		seriesList, err := getSeries(instance)
+		if err != nil {
+			log.Printf("[%s] ERROR fetching series: %v", instance.Name, err)
+			continue
+		}
+		log.Printf("[%s] Successfully found %d series.", instance.Name, len(seriesList))
+
+		for _, series := range seriesList {
+			if !series.Monitored {
+				continue
+			}
+			translatedPath := translatePath(series.Path, instance.PathMappings)
+			localTrailerFound, err := hasLocalSeriesTrailer(translatedPath, config)
+			if err != nil {
+				log.Printf("[%s] WARNING: Could not check series folder for '%s' ('%s'): %v", instance.Name, series.Title, translatedPath, err)
+				continue
+			}
+			if !localTrailerFound {
+				log.Printf("[%s] MISSING: Series '%s' has no local trailer. Starting search...", instance.Name, series.Title)
+				youtubeKey := ""
+				if config.TmdbApiKey != "" {
+					key, err := findSeriesTrailerOnTMDB(series, config.TmdbApiKey)
+					if err != nil {
+						log.Printf("[%s] INFO: TMDB search for '%s' failed: %v. Falling back to direct search.", instance.Name, series.Title, err)
+					}
+					youtubeKey = key
+				}
+				if youtubeKey != "" {
+					log.Printf("[%s] ACTION: Found trailer for '%s' on TMDB (YouTube Key: %s). Would download now.", instance.Name, series.Title, youtubeKey)
+				} else {
+					log.Printf("[%s] ACTION: No trailer found on TMDB for '%s'. Would use direct yt-dlp search now.", instance.Name, series.Title)
+				}
+			} else {
+				log.Printf("[%s] OK: Series '%s' already has a local trailer.", instance.Name, series.Title)
+			}
+		}
 	}
+
 	log.Println("Arr Trailer Core (ATC) has finished.")
 }
 
-// --- loadConfig (bleibt gleich) ---
+// --- Helper function to load the YAML file ---
 func loadConfig(filename string) (*Config, error) {
 	data, err := os.ReadFile(filename)
 	if err != nil {
