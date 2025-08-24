@@ -34,6 +34,7 @@ To get started, you need to create a `config.yaml` file that contains your serve
 ## Usage
 
 It is recommended to run ATC from a pre-compiled binary directly on your server (e.g., unRAID).
+The pre-compiled binary provided in the GitHub Releases is for linux/amd64 systems. Users on other architectures (e.g., ARM-based systems like Raspberry Pi) will need to build the application from source!
 
 1.  Download the `yt-dlp` executable for your system and place it in the same folder as `arr-trailer-core`.
 2.  For best results, install `ffmpeg` on your system so `yt-dlp` can merge video and audio streams.
