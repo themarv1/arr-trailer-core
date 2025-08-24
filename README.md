@@ -36,7 +36,7 @@ To get started, you need to create a `config.yaml` file that contains your serve
 It is recommended to run ATC from a pre-compiled binary directly on your server (e.g., unRAID).
 
 1.  Download the `yt-dlp` executable for your system and place it in the same folder as `arr-trailer-core`.
-2.  For best results, install `ffmpeg` on your system so `yt-dlp` can merge video and audio streams. On unRAID, this can be done via the "Nerd Pack" Community App.
+2.  For best results, install `ffmpeg` on your system so `yt-dlp` can merge video and audio streams.
 3.  [Build the binary for your server's operating system](#building-from-source).
 4.  Copy the compiled `arr-trailer-core` binary and your `config.yaml` file to a directory on your server.
 5.  Make the binary executable (one-time command):
