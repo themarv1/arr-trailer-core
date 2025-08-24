@@ -10,7 +10,7 @@ import (
 
 // getSeries führt einen API-Aufruf an eine Sonarr-Instanz durch, um alle Serien abzurufen.
 func getSeries(instance SonarrInstance) ([]Series, error) {
-	url := fmt.Sprintf("%s/api/v3/series", instance.URL)
+	url := fmt.Sprintf("%s/api/v5/series", instance.URL)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
