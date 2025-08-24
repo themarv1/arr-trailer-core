@@ -1,8 +1,6 @@
-# Configuration for arr-trailer-core
-
 # --- Global Settings ---
-log_level: "info" # "info" or "debug"
-dry_run: false # if true, no changes will be made (e.g., no downloads)
+log_level: "info" # Log level for console output. Can be "info" or "debug".
+dry_run: false # If true, the app will only simulate actions (e.g., no downloads).
 
 # Optional: Provide a TMDB API key for higher quality trailer searches.
 # If this is left empty, a less accurate direct YouTube search will be used as a fallback.
@@ -10,9 +8,12 @@ tmdb_api_key: ""
 
 # --- Download settings ---
 download:
-  enabled: true # Master switch to enable/disable trailer downloading
-  yt_dlp_path: "/usr/bin/yt-dlp" # Path to the yt-dlp executable on your server
-  # Quality settings for yt-dlp. This is a good default for 1080p.
+  enabled: true # Enable or disable downloading trailers
+  # Path to the yt-dlp executable. Default assumes it's in the same folder.
+  yt_dlp_path: "./yt-dlp"
+  # Path to the ffmpeg executable. Default assumes it's in the same folder.
+  ffmpeg_path: "./ffmpeg"
+  # Quality settings for yt-dlp.
   quality: "bestvideo[height<=1080][ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best"
 
 # --- Instance Configurations ---

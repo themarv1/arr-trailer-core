@@ -8,9 +8,9 @@ import (
 	"net/http"
 )
 
-// getSeries führt einen API-Aufruf an eine Sonarr-Instanz durch, um alle Serien abzurufen.
+// getSeries uses the Sonarr API to get a list of all series.
 func getSeries(instance SonarrInstance) ([]Series, error) {
-	url := fmt.Sprintf("%s/api/v5/series", instance.URL)
+	url := fmt.Sprintf("%s/api/v3/series", instance.URL)
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -28,7 +28,6 @@ func getSeries(instance SonarrInstance) ([]Series, error) {
 
 	if resp.StatusCode != http.StatusOK {
 		statusErr := errors.New(resp.Status)
-		// HIER IST DIE ÄNDERUNG: "Sonarr" -> "sonarr"
 		return nil, fmt.Errorf("sonarr returned non-OK status: %w", statusErr)
 	}
 

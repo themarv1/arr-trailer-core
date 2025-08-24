@@ -3,12 +3,23 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"os"
 	"strings"
 
 	"gopkg.in/yaml.v2"
 )
+
+var errorLog *log.Logger
+
+func setupErrorLogger() {
+	file, err := os.OpenFile("atc-startup-errors.log", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0666)
+	if err != nil {
+		log.Fatalf("Failed to open error log file: %v", err)
+	}
+	errorLog = log.New(file, "ERROR: ", log.Ldate|log.Ltime|log.Lshortfile)
+}
 
 // --- Structs for configuration ---
 type PathMapping struct {
@@ -47,15 +58,19 @@ func translatePath(originalPath string, mappings []PathMapping) string {
 }
 
 func main() {
+	setupErrorLogger()
+
 	// --- Setup ---
-	log.Println("--- ATC v2.0 with instance-specific Path Mapping ---")
+	log.Println("--- Arr Trailer Core v1.0.0 ---")
 	configFile := flag.String("config", "config.yaml", "Path to the configuration file")
 	cliDryRun := flag.Bool("dry-run", false, "Overrides the config file and forces a dry run.")
 	flag.Parse()
 	log.Println("Arr Trailer Core (ATC) is starting...")
 	config, err := loadConfig(*configFile)
 	if err != nil {
-		log.Fatalf("Error loading configuration from '%s': %v", *configFile, err)
+		errorMsg := fmt.Sprintf("Error loading configuration from '%s': %v", *configFile, err)
+		errorLog.Println(errorMsg)
+		log.Fatalf("FATAL: %s. See atc-startup-errors.log for details.", errorMsg)
 	}
 	if config.LogLevel == "" {
 		config.LogLevel = "info"
@@ -64,6 +79,72 @@ func main() {
 	if isDryRun {
 		log.Printf(">>> ATTENTION: Dry Run mode is active. No real changes will be made. <<<")
 	}
+
+	// --- PRE-FLIGHT CHECKS ---
+	log.Println("--- Running Pre-flight Checks ---")
+
+	// Check 1: Dependencies (yt-dlp & ffmpeg)
+	if config.Download.Enabled {
+		if err := checkDependencies(&config.Download); err != nil {
+			errorLog.Println(err)
+			log.Fatalf("FATAL: Dependency check failed: %v", err)
+		}
+	}
+
+	// Check 2: Radarr instances
+	for _, instance := range config.Radarr {
+		log.Printf("Checking connection to Radarr instance '%s'...", instance.Name)
+		if err := checkArrConnection(instance.URL, instance.APIKey, "radarr"); err != nil {
+			errorMsg := fmt.Sprintf("Failed to connect to Radarr instance '%s' (%s): %v", instance.Name, instance.URL, err)
+			errorLog.Println(errorMsg)
+			log.Fatalf("FATAL: %s. See atc-startup-errors.log for details.", errorMsg)
+		}
+
+		rootFolders, err := getRootFolders(instance.URL, instance.APIKey, "radarr")
+		if err != nil {
+			errorMsg := fmt.Sprintf("Failed to get root folders for Radarr instance '%s': %v", instance.Name, err)
+			errorLog.Println(errorMsg)
+			log.Fatalf("FATAL: %s", errorMsg)
+		}
+		var translatedPaths []string
+		for _, path := range rootFolders {
+			translatedPaths = append(translatedPaths, translatePath(path, instance.PathMappings))
+		}
+		if err := checkWritePermissions(translatedPaths); err != nil {
+			errorMsg := fmt.Sprintf("Write permission check failed for Radarr instance '%s': %v", instance.Name, err)
+			errorLog.Println(errorMsg)
+			log.Fatalf("FATAL: %s", errorMsg)
+		}
+	}
+
+	// Check 3: Sonarr instances
+	for _, instance := range config.Sonarr {
+		log.Printf("Checking connection to Sonarr instance '%s'...", instance.Name)
+		if err := checkArrConnection(instance.URL, instance.APIKey, "sonarr"); err != nil {
+			errorMsg := fmt.Sprintf("Failed to connect to Sonarr instance '%s' (%s): %v", instance.Name, instance.URL, err)
+			errorLog.Println(errorMsg)
+			log.Fatalf("FATAL: %s. See atc-startup-errors.log for details.", errorMsg)
+		}
+
+		rootFolders, err := getRootFolders(instance.URL, instance.APIKey, "sonarr")
+		if err != nil {
+			errorMsg := fmt.Sprintf("Failed to get root folders for Sonarr instance '%s': %v", instance.Name, err)
+			errorLog.Println(errorMsg)
+			log.Fatalf("FATAL: %s", errorMsg)
+		}
+		var translatedPaths []string
+		for _, path := range rootFolders {
+			translatedPaths = append(translatedPaths, translatePath(path, instance.PathMappings))
+		}
+		if err := checkWritePermissions(translatedPaths); err != nil {
+			errorMsg := fmt.Sprintf("Write permission check failed for Sonarr instance '%s': %v", instance.Name, err)
+			errorLog.Println(errorMsg)
+			log.Fatalf("FATAL: %s", errorMsg)
+		}
+	}
+
+	log.Println("--- Pre-flight Checks Passed ---")
+	// --- END PRE-FLIGHT CHECKS ---
 
 	// --- Process Radarr Instances ---
 	log.Println("Processing Radarr instances...")
@@ -101,10 +182,12 @@ func main() {
 					}
 					youtubeKey = key
 				}
-				if youtubeKey != "" {
-					log.Printf("[%s] ACTION: Found trailer for '%s' on TMDB (YouTube Key: %s). Would download now.", instance.Name, movie.Title, youtubeKey)
+				if config.Download.Enabled && !isDryRun {
+					downloadMovieTrailer(movie, youtubeKey, config, instance)
+				} else if !config.Download.Enabled {
+					log.Printf("[%s] INFO: Download is disabled in config. Skipping download for '%s'.", instance.Name, movie.Title)
 				} else {
-					log.Printf("[%s] ACTION: No trailer found on TMDB for '%s'. Would use direct yt-dlp search now.", instance.Name, movie.Title)
+					log.Printf("[%s] DRY RUN: Would now download trailer for '%s'.", instance.Name, movie.Title)
 				}
 			} else {
 				log.Printf("[%s] OK: '%s (%d)' already has a local trailer.", instance.Name, movie.Title, movie.Year)
@@ -124,7 +207,6 @@ func main() {
 		log.Printf("[%s] Successfully found %d series.", instance.Name, len(seriesList))
 
 		for _, series := range seriesList {
-			// Skip series that are not monitored or have no files on disk yet
 			if !series.Monitored || series.Statistics.EpisodeFileCount == 0 {
 				continue
 			}
@@ -144,10 +226,12 @@ func main() {
 					}
 					youtubeKey = key
 				}
-				if youtubeKey != "" {
-					log.Printf("[%s] ACTION: Found trailer for '%s' on TMDB (YouTube Key: %s). Would download now.", instance.Name, series.Title, youtubeKey)
+				if config.Download.Enabled && !isDryRun {
+					downloadSeriesTrailer(series, youtubeKey, config, instance)
+				} else if !config.Download.Enabled {
+					log.Printf("[%s] INFO: Download is disabled in config. Skipping download for series '%s'.", instance.Name, series.Title)
 				} else {
-					log.Printf("[%s] ACTION: No trailer found on TMDB for '%s'. Would use direct yt-dlp search now.", instance.Name, series.Title)
+					log.Printf("[%s] DRY RUN: Would now download trailer for series '%s'.", instance.Name, series.Title)
 				}
 			} else {
 				log.Printf("[%s] OK: Series '%s' already has a local trailer.", instance.Name, series.Title)

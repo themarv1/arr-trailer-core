@@ -2,9 +2,10 @@ package main
 
 // DownloadConfig holds settings related to downloading trailers.
 type DownloadConfig struct {
-	Enabled   bool   `yaml:"enabled"`
-	YTDLPPath string `yaml:"yt_dlp_path"`
-	Quality   string `yaml:"quality"`
+	Enabled    bool   `yaml:"enabled"`
+	YTDLPPath  string `yaml:"yt_dlp_path"`
+	FfmpegPath string `yaml:"ffmpeg_path"`
+	Quality    string `yaml:"quality"`
 }
 
 // Movie represents the structure of a single movie from the Radarr API response.
