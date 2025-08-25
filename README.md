@@ -20,70 +20,51 @@ ATC scans your library, identifies media missing a trailer, finds the correct tr
 -   **Pre-flight Checks:** Verifies API connections, folder permissions, and dependencies (`yt-dlp`, `ffmpeg`) before starting to ensure a smooth run.
 -   **Dry Run Mode:** Run the entire process in a simulation mode (`--dry-run`) to see what actions *would* be taken without downloading any files.
 
+## Download & Installation
+
+The easiest way to get started is by downloading the official release package for Linux (amd64).
+
+1.  Go to the [**GitHub Releases**](https://github.com/themarv1/arr-trailer-core/releases/latest) page.
+2.  Download the `arr-trailer-core-v1.0.0-linux-amd64.tar.gz` file.
+3.  Upload the `.tar.gz` file to your server (e.g., to `/mnt/user/appdata/`).
+4.  Unpack the archive using the terminal:
+    ```bash
+    tar -xzvf arr-trailer-core-v1.0.0-linux-amd64.tar.gz
+    ```
+    This will create a new folder named `arr-trailer-core-release` containing the application and all its dependencies.
+5.  Navigate into the new directory:
+    ```bash
+    cd arr-trailer-core-release
+    ```
+6.  Follow the [Configuration](#configuration) steps below.
+
 ## Configuration
 
-To get started, you need to create a `config.yaml` file that contains your server details.
-
-1.  Create your personal configuration file by copying the provided template:
+1.  Inside the `arr-trailer-core-release` folder, copy the example configuration file:
     ```bash
     cp example-config.yaml config.yaml
     ```
-2.  Open the new `config.yaml` file with a text editor.
-3.  Fill in the actual URLs and API keys for your Radarr/Sonarr instances, your TMDB API key, and verify all paths. The `config.yaml` file should be in your `.gitignore`, so your private keys will remain safe.
+2.  Open `config.yaml` with a text editor (e.g., `nano config.yaml`) and fill in your details. The default paths for `yt-dlp` and `ffmpeg` are already set correctly to use the included files.
 
 ## Usage
 
-It is recommended to run ATC from a pre-compiled binary directly on your server (e.g., unRAID).
-The pre-compiled binary provided in the GitHub Releases is for linux/amd64 systems. Users on other architectures (e.g., ARM-based systems like Raspberry Pi) will need to build the application from source!
-
-1.  Download the `yt-dlp` executable for your system and place it in the same folder as `arr-trailer-core`.
-2.  For best results, install `ffmpeg` on your system so `yt-dlp` can merge video and audio streams.
-3.  [Build the binary for your server's operating system](#building-from-source).
-4.  Copy the compiled `arr-trailer-core` binary and your `config.yaml` file to a directory on your server.
-5.  Make the binary executable (one-time command):
+1.  Make the main application executable (one-time command):
     ```bash
     chmod +x arr-trailer-core
     ```
-6.  Run the program from the terminal:
+2.  Run the program from within the `arr-trailer-core-release` directory:
     ```bash
     ./arr-trailer-core
     ```
-
+    
 ### Command-Line Flags
 
 -   `--config <path>`: Specify a custom path to your configuration file (default is `./config.yaml`).
 -   `--dry-run`: Overrides the config file setting and forces a dry run.
 
-## Downloads
-
-You can download the latest pre-compiled binaries from the [**GitHub Releases**](https://github.com/themarv1/arr-trailer-core/releases/latest) page. Remember to also download [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ffmpeg](https://ffmpeg.org/download.html) for your operating system. 
-
-| OS / Architecture             | Download Asset Name                               |
-| ----------------------------- | ------------------------------------------------- |
-| **Linux x86_64(recommended)** | `arr-trailer-core-v1.0.0-linux-amd64`             |
-| Linux ARM64/aarch64           | `arr-trailer-core-v1.0.0-linux-arm64`             |
-| Windows x86_64                | `arr-trailer-core-v1.0.0-windows-amd64.exe`       |
-| macOS Apple Silicon           | `arr-trailer-core-v1.0.0-macos-apple-silicon`     |
-| macOS Intel-CPU               | `arr-trailer-core-v1.0.0-macos-intel`             |
-
-Users on other architectures will need to build the application from source.
-
 ## Building from Source
 
 You can compile the project from source using the Go toolchain.
-
-**To build from a linux operating system:**
-```bash
-go build -o arr-trailer-core .
-```
-**To cross-compile from Windows PowerShell:**
-```Powershell
-$env:GOOS="linux"; $env:GOARCH="amd64"; go build -o arr-trailer-core .
-```
-**To cross-compile from MacOS:**
-```Bash
-GOOS=linux GOARCH=amd64 go build -o arr-trailer-core .
-```
 
 ## Roadmap / Future Work
 
