@@ -64,10 +64,11 @@ The easiest way to get started is by downloading the official release package fo
 
 ## Building from Source
 
-You can compile the project from source using the Go toolchain.
+To compile the project from source, you need a working Go development environment (version 1.22 or newer is recommended).
 
 ## Roadmap / Future Work
 
+-   [ ] **Code Refactoring:** Consolidate downloader and search functions for movies and series to reduce code duplication using interfaces.
 -   [ ] **Docker Container:** Create a `Dockerfile` for easy, self-contained deployment of the application and all its dependencies.
 -   [ ] **Self-Updating Dependencies:** Implement a mechanism, especially for the Docker image, to automatically update `yt-dlp` to the latest version on startup.
 -   [ ] **Post-Processing:** Add optional steps to call `ffmpeg` for embedding metadata into the downloaded trailer files.
