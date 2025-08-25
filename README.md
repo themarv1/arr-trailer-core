@@ -56,15 +56,15 @@ The pre-compiled binary provided in the GitHub Releases is for linux/amd64 syste
 
 ## Downloads
 
-You can download the latest pre-compiled binaries from the [**GitHub Releases**](https://github.com/themarv1/arr-trailer-core/releases/latest) page. Remember to also download `yt-dlp` and `ffmpeg` binaries!.
+You can download the latest pre-compiled binaries from the [**GitHub Releases**](https://github.com/themarv1/arr-trailer-core/releases/latest) page. Remember to also download [yt-dlp](https://github.com/yt-dlp/yt-dlp) and [ffmpeg](https://ffmpeg.org/download.html) for your operating system. 
 
-| Operating System      | Architecture    | Download Asset Name                               | Status                   |
-| --------------------- | --------------- | ------------------------------------------------- | ------------------------ |
-| **Linux** | **x86_64** | `arr-trailer-core-v1.0.0-linux-amd64`             | **Recommended & Tested** |
-| Linux                 | ARM64 (aarch64) | `arr-trailer-core-v1.0.0-linux-arm64`             | Community Supported      |
-| Windows               | x86_64          | `arr-trailer-core-v1.0.0-windows-amd64.exe`       | Community Supported      |
-| macOS                 | Apple Silicon   | `arr-trailer-core-v1.0.0-macos-apple-silicon`     | Community Supported      |
-| macOS                 | Intel           | `arr-trailer-core-v1.0.0-macos-intel`             | Community Supported      |
+| OS / Architecture             | Download Asset Name                               |
+| ----------------------------- | ------------------------------------------------- |
+| **Linux x86_64(recommended)** | `arr-trailer-core-v1.0.0-linux-amd64`             |
+| Linux ARM64/aarch64           | `arr-trailer-core-v1.0.0-linux-arm64`             |
+| Windows x86_64                | `arr-trailer-core-v1.0.0-windows-amd64.exe`       |
+| macOS Apple Silicon           | `arr-trailer-core-v1.0.0-macos-apple-silicon`     |
+| macOS Intel-CPU               | `arr-trailer-core-v1.0.0-macos-intel`             |
 
 Users on other architectures will need to build the application from source.
 
