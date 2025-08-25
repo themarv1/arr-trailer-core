@@ -54,6 +54,20 @@ The pre-compiled binary provided in the GitHub Releases is for linux/amd64 syste
 -   `--config <path>`: Specify a custom path to your configuration file (default is `./config.yaml`).
 -   `--dry-run`: Overrides the config file setting and forces a dry run.
 
+## Downloads
+
+You can download the latest pre-compiled binaries from the [**GitHub Releases**](https://github.com/themarv1/arr-trailer-core/releases/latest) page. Remember to also download `yt-dlp` and `ffmpeg` binaries!.
+
+| Operating System      | Architecture    | Download Asset Name                               | Status                   |
+| --------------------- | --------------- | ------------------------------------------------- | ------------------------ |
+| **Linux** | **x86_64** | `arr-trailer-core-v1.0.0-linux-amd64`             | **Recommended & Tested** |
+| Linux                 | ARM64 (aarch64) | `arr-trailer-core-v1.0.0-linux-arm64`             | Community Supported      |
+| Windows               | x86_64          | `arr-trailer-core-v1.0.0-windows-amd64.exe`       | Community Supported      |
+| macOS                 | Apple Silicon   | `arr-trailer-core-v1.0.0-macos-apple-silicon`     | Community Supported      |
+| macOS                 | Intel           | `arr-trailer-core-v1.0.0-macos-intel`             | Community Supported      |
+
+Users on other architectures will need to build the application from source.
+
 ## Building from Source
 
 You can compile the project from source using the Go toolchain.
